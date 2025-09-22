@@ -9,23 +9,24 @@ import {
   GripVertical 
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import type { Task } from '@/types/task'
 
-interface Task {
-  _id: string
-  title: string
-  description?: string
-  status: 'todo' | 'in-progress' | 'review' | 'done'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  dueDate?: string
-  assignees?: Array<{
-    _id: string
-    name: string
-    email: string
-  }>
-  aiMetadata?: {
-    suggestedPriority?: string
-  }
-}
+// interface Task {
+//   _id: string
+//   title: string
+//   description?: string
+//   status: 'todo' | 'in-progress' | 'review' | 'done'
+//   priority: 'low' | 'medium' | 'high' | 'urgent'
+//   dueDate?: string
+//   assignees?: Array<{
+//     _id: string
+//     name: string
+//     email: string
+//   }>
+//   aiMetadata?: {
+//     suggestedPriority?: string
+//   }
+// }
 
 interface KanbanBoardProps {
   tasks: Task[]

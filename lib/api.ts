@@ -29,7 +29,7 @@ api.interceptors.response.use(
     }
     
     const message = error.response?.data?.error || error.message || 'Something went wrong'
-    toast.error(message)
+    toast.error(error.message)
     return Promise.reject(error)
   }
 )
