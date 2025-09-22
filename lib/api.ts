@@ -1,65 +1,62 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import toast from 'react-hot-toast'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
-export const api = axios.create({
+const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, 
 })
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
+// Request interceptor to add auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
-)
+  return config
+})
 
+// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<any>) => {
+  (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
-      toast.error('Session expired. Please login again.')
-    } else if (error.response?.data?.error?.message) {
-      toast.error(error.response.data.error.message)
-    } else {
-      toast.error('An unexpected error occurred')
     }
+    
+    const message = error.response?.data?.error || error.message || 'Something went wrong'
+    toast.error(message)
     return Promise.reject(error)
   }
 )
 
 export const authAPI = {
-  register: async (data: any) => {
-    const res = await api.post('/auth/register', data)
-    if (res.data.data.token) {
+  login: async (data: { email: string; password: string }) => {
+    const res = await api.post('/auth/login', data)
+    if (res.data.data?.token) {
       localStorage.setItem('token', res.data.data.token)
     }
     return res.data
   },
   
-  login: async (data: any) => {
-    const res = await api.post('/auth/login', data)
-    if (res.data.data.token) {
+  register: async (data: any) => {
+    const res = await api.post('/auth/register', data)
+    if (res.data.data?.token) {
       localStorage.setItem('token', res.data.data.token)
     }
     return res.data
   },
   
   logout: async () => {
-    await api.post('/auth/logout')
-    localStorage.removeItem('token')
+    try {
+      await api.post('/auth/logout')
+    } finally {
+      localStorage.removeItem('token')
+    }
   },
   
   me: async () => {
@@ -94,8 +91,13 @@ export const projectAPI = {
     return res.data
   },
   
-  addMember: async (id: string, data: any) => {
-    const res = await api.post(`/projects/${id}/members`, data)
+  addMember: async (projectId: string, data: { email: string; role: string }) => {
+    const res = await api.post(`/projects/${projectId}/members`, data)
+    return res.data
+  },
+  
+  removeMember: async (projectId: string, memberId: string) => {
+    const res = await api.delete(`/projects/${projectId}/members/${memberId}`)
     return res.data
   },
 }
@@ -135,6 +137,21 @@ export const taskAPI = {
     const res = await api.post(`/tasks/${id}/comments`, { text })
     return res.data
   },
+  
+  addDependency: async (taskId: string, dependencyId: string) => {
+    const res = await api.post(`/tasks/${taskId}/dependencies`, { dependencyId })
+    return res.data
+  },
+  
+  removeDependency: async (taskId: string, dependencyId: string) => {
+    const res = await api.delete(`/tasks/${taskId}/dependencies/${dependencyId}`)
+    return res.data
+  },
+  
+  getSubtasks: async (taskId: string) => {
+    const res = await api.get(`/tasks/${taskId}/subtasks`)
+    return res.data
+  },
 }
 
 export const aiAPI = {
@@ -153,3 +170,5 @@ export const aiAPI = {
     return res.data
   },
 }
+
+export default api
