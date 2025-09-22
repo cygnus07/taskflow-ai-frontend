@@ -20,7 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const { user, isAuthenticated, checkAuth, logout } = useAuthStore()
+  const { user, isAuthenticated, checkAuth, logout, isCheckingAuth } = useAuthStore()
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const { isConnected } = useSocket(token)
 
@@ -29,15 +29,23 @@ export default function DashboardLayout({
   }, [])
 
   useEffect(() => {
-    if (!isAuthenticated && user === null) {
+    if (!isCheckingAuth && !isAuthenticated && user === null) {
       router.push('/login')
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, user, router, isCheckingAuth ])
 
   const handleLogout = async () => {
     await logout()
     router.push('/login')
   }
+
+  if (isCheckingAuth) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  )
+}
 
   if (!user) {
     return (
