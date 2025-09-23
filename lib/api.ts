@@ -29,7 +29,7 @@ api.interceptors.response.use(
     }
     
     const message = error.response?.data?.error || error.message || 'Something went wrong'
-    toast.error(error.message)
+    toast.error(message)
     return Promise.reject(error)
   }
 )
@@ -43,7 +43,12 @@ export const authAPI = {
     return res.data
   },
   
-  register: async (data: any) => {
+  register: async (data: {
+    name: string
+    email: string
+    password: string
+    companyName: string
+  }) => {
     const res = await api.post('/auth/register', data)
     if (res.data.data?.token) {
       localStorage.setItem('token', res.data.data.token)
@@ -63,6 +68,25 @@ export const authAPI = {
     const res = await api.get('/auth/me')
     return res.data
   },
+  
+  updateProfile: async (data: {
+    name?: string
+    email?: string
+    avatar?: string
+  }) => {
+    const res = await api.put('/auth/profile', data)
+    return res.data
+  },
+  
+  changePassword: async (data: {
+    currentPassword: string
+    newPassword: string
+  }) => {
+    const res = await api.put('/auth/change-password', data)
+    return res.data
+  },
+  
+  
 }
 
 export const projectAPI = {
@@ -100,6 +124,7 @@ export const projectAPI = {
     const res = await api.delete(`/projects/${projectId}/members/${memberId}`)
     return res.data
   },
+  
 }
 
 export const taskAPI = {
@@ -170,5 +195,7 @@ export const aiAPI = {
     return res.data
   },
 }
+
+
 
 export default api
