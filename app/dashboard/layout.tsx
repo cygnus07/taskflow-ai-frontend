@@ -46,7 +46,7 @@ export default function DashboardLayout({
     </div>
   )
 }
-
+  
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
